@@ -1,3 +1,24 @@
 * {
     font-family: sans-serif;
 }
+
+
+.gameboard {
+    width: 1000px;
+    height: 700px;
+    background-color: #f0f0f0;
+    margin: 30px;
+
+    /* Hospital */
+    border-bottom-style: dashed;
+    border-bottom-color: coral;
+}
+
+.gameboard .river {
+    height: 7%;
+    background-color: cornflowerblue;
+}
+
+.gameboard .playground {
+    height: 93%;
+}

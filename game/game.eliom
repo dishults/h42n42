@@ -12,9 +12,21 @@ let main_service =
   Eliom_service.create ~path:(Eliom_service.Path [])
     ~meth:(Eliom_service.Get Eliom_parameter.unit) ()
 
+let page () =
+  body
+    [
+      div
+        ~a:[ a_class [ "gameboard" ] ]
+        [
+          div ~a:[ a_class [ "river" ] ] [];
+          div ~a:[ a_class [ "playground" ] ] [];
+          (* Hospital is a dashed line at the bottom *)
+        ];
+    ]
+
 let () =
   Game_app.register ~service:main_service (fun () () ->
       Lwt.return
-        (Eliom_tools.F.html ~title:"game"
+        (Eliom_tools.F.html ~title:"h42n42"
            ~css:[ [ "css"; "game.css" ] ]
-           Html.F.(body [ h1 [ txt "Welcome from Eliom's distillery!" ] ])))
+           Html.F.(page ())))
