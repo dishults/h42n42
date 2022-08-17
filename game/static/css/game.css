@@ -2,23 +2,30 @@
     font-family: sans-serif;
 }
 
-
 .gameboard {
     width: 1000px;
     height: 700px;
     background-color: #f0f0f0;
-    margin: 30px;
 
     /* Hospital */
     border-bottom-style: dashed;
     border-bottom-color: coral;
 }
 
-.gameboard .river {
+.river {
     height: 7%;
     background-color: #4ab3b4;
 }
 
-.gameboard .playground {
+.playground {
     height: 93%;
+}
+
+.creet {
+    height: 50px;
+    width: 50px;
+    background-color: #267ef5;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
 }
