@@ -1,0 +1,46 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Terminate All Tasks",
+            "type": "shell",
+            "command": "echo ${input:terminate}"
+        },
+        {
+            "label": "kill-listener",
+            "type": "shell",
+            "command": "lsof -i tcp:8080 | grep LISTEN | awk '{print $2}' | xargs kill -9",
+            "presentation": { "reveal": "never" }
+        },
+        {
+            "label": "autoformat",
+            "type": "shell",
+            "command": "./autoformat.sh",
+            "options": { "cwd": "${workspaceFolder}/game" },
+            "presentation": { "reveal": "never", "clear": true }
+        },
+        {
+            "label": "test",
+            "type": "shell",
+            "command": "make test.opt",
+            "options": { "cwd": "${workspaceFolder}/game" },
+            "presentation": { "reveal": "never" }
+        },
+        {
+            "label": "Build",
+            "dependsOn": [ "autoformat", "Terminate All Tasks", "kill-listener", "test" ],
+            "dependsOrder": "sequence",
+            "group": { "kind": "build", "isDefault": true }
+        }
+    ],
+    "inputs": [
+        {
+          "id": "terminate",
+          "type": "command",
+          "command": "workbench.action.tasks.terminate",
+          "args": "terminateAll"
+        }
+    ]
+}

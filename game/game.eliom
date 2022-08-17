@@ -12,6 +12,8 @@ let main_service =
   Eliom_service.create ~path:(Eliom_service.Path [])
     ~meth:(Eliom_service.Get Eliom_parameter.unit) ()
 
+let playground_elt = div ~a:[ a_class [ "playground" ] ] []
+
 let page () =
   body
     [
@@ -19,7 +21,7 @@ let page () =
         ~a:[ a_class [ "gameboard" ] ]
         [
           div ~a:[ a_class [ "river" ] ] [];
-          div ~a:[ a_class [ "playground" ] ] [];
+          playground_elt;
           (* Hospital is a dashed line at the bottom *)
         ];
     ]
@@ -27,6 +29,6 @@ let page () =
 let () =
   Game_app.register ~service:main_service (fun () () ->
       Lwt.return
-        (Eliom_tools.F.html ~title:"h42n42"
+        (Eliom_tools.D.html ~title:"h42n42"
            ~css:[ [ "css"; "game.css" ] ]
-           Html.F.(page ())))
+           (page ())))
