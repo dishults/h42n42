@@ -12,7 +12,8 @@ let main () =
   let creet = Creet.create () in
   Firebug.console##log_2 (Js.string "creet") creet;
 
-  Dom.appendChild playground.dom_elt creet.dom_elt]
+  Lwt.async (fun () -> Playground.add_creet playground creet);
+  Lwt.return ()]
 
 [%%server
 module Game_app = Eliom_registration.App (struct
@@ -38,6 +39,6 @@ let page =
 
 let () =
   Game_app.register ~service:main_service (fun () () ->
-      let _ = [%client (main () : unit)] in
+      let _ = [%client (main () : unit Lwt.t)] in
       Lwt.return
         (Eliom_tools.D.html ~title:"h42n42" ~css:[ [ "css"; "game.css" ] ] page))]
