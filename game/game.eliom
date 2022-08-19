@@ -1,26 +1,15 @@
 [%%shared
-open Eliom_content
 open Eliom_lib
+open Eliom_content
 open Html.D
-open Js_of_ocaml
-
-let playground_elt = div ~a:[ a_class [ "playground" ] ] []]
+open Js_of_ocaml]
 
 [%%client
-open CustomTypes
-
-let get_playground () =
-  { dom_elt = Eliom_content.Html.To_dom.of_div ~%playground_elt }
-
-let create_creet () =
-  let creet_elt = div ~a:[ a_class [ "creet" ] ] [] in
-  { dom_elt = Eliom_content.Html.To_dom.of_div creet_elt }
-
 let main () =
-  let playground = get_playground () in
+  let playground = Playground.get () in
   Firebug.console##log_2 (Js.string "playground") playground;
 
-  let creet = create_creet () in
+  let creet = Creet.create () in
   Firebug.console##log_2 (Js.string "creet") creet;
 
   Dom.appendChild playground.dom_elt creet.dom_elt]
@@ -42,7 +31,7 @@ let page =
         ~a:[ a_class [ "gameboard" ] ]
         [
           div ~a:[ a_class [ "river" ] ] [];
-          playground_elt;
+          Playground.elt;
           (* Hospital is a dashed line at the bottom *)
         ];
     ]
