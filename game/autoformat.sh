@@ -7,5 +7,7 @@ for file in *.eliom; do
     # If success -> replace original with formated
     if [ $? -eq 0 ] ; then
         echo $FORMATED > $file
+    else
+        exit $?
     fi
 done

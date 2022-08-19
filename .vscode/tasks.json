@@ -19,7 +19,7 @@
             "type": "shell",
             "command": "./autoformat.sh",
             "options": { "cwd": "${workspaceFolder}/game" },
-            "presentation": { "reveal": "never", "clear": true }
+            "presentation": { "reveal": "silent", "clear": true }
         },
         {
             "label": "test",
