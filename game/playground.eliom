@@ -1,7 +1,8 @@
 [%%shared
 open Eliom_content.Html.D
 
-let elt = div ~a:[ a_class [ "playground" ] ] []]
+let elt = div ~a:[ a_class [ "playground" ] ] []
+(**)]
 
 [%%client
 open Eliom_content
@@ -18,4 +19,5 @@ let add_creet playground (creet : Creet.creet) =
   Dom.appendChild playground.dom_elt creet.dom_elt;
   playground.creets <- creet :: playground.creets;
   Firebug.console##log_2 (Js.string "creets_nb") (List.length playground.creets);
-  Lwt.return ()]
+  Lwt.return ()
+(**)]

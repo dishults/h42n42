@@ -26,7 +26,7 @@
             "type": "shell",
             "command": "make test.opt",
             "options": { "cwd": "${workspaceFolder}/game" },
-            "presentation": { "reveal": "never" }
+            "presentation": { "reveal": "silent" }
         },
         {
             "label": "Build",
