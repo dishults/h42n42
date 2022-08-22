@@ -7,6 +7,7 @@ open Js_of_ocaml
 
 [%%client
 let main () =
+  Random.self_init ();
   let playground = Playground.get () in
   Firebug.console##log_2 (Js.string "playground") playground;
 
