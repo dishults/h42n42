@@ -14,7 +14,7 @@ let main () =
   Firebug.console##log_2 (Js.string "creet") creet;
 
   Lwt.async (fun () -> Playground.add_creet playground creet);
-  Lwt.async (fun () -> Creet.move creet ());
+  Lwt.async (fun () -> Creet.move creet);
   Lwt.return ()
 (**)]
 
