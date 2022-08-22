@@ -20,11 +20,11 @@ type creet = {
 
 let create () =
   {
+    (* TODO random direction *)
     dom_elt = Html.To_dom.of_div elt;
     top = 1;
     top_min = 0;
     top_max = 602;
-    (* TODO random direction *)
     top_change = 1;
     left = 1;
     left_min = 0;
@@ -44,18 +44,17 @@ let change_top creet () =
 
 let rec move creet () =
   (* TODO increasing speed *)
-  let%lwt () = Lwt_js.sleep 0.00001 in
-  match creet with
-  | creet when List.mem creet.left [ creet.left_min; creet.left_max ] ->
-      creet.left_change <- creet.left_change * -1;
-      change_left creet ();
-      move creet ()
-  | creet when List.mem creet.top [ creet.top_min; creet.top_max ] ->
-      creet.top_change <- creet.top_change * -1;
-      change_top creet ();
-      move creet ()
-  | creet ->
-      change_top creet ();
-      change_left creet ();
-      move creet ()
+  let%lwt () = Lwt_js.sleep 0.001 in
+  if creet.left = creet.left_min || creet.left = creet.left_max then (
+    creet.left_change <- creet.left_change * -1;
+    change_left creet ();
+    move creet ())
+  else if creet.top = creet.top_min || creet.top = creet.top_max then (
+    creet.top_change <- creet.top_change * -1;
+    change_top creet ();
+    move creet ())
+  else (
+    change_top creet ();
+    change_left creet ();
+    move creet ())
 (**)]
