@@ -40,6 +40,13 @@ let _get_bg_color state =
 let _get_px number = Js.string (Printf.sprintf "%fpx" number)
 let _get_step position step speed = position +. (step *. speed)
 
+let _get_random_steps () =
+  let step = Random.float 1. in
+  let top_step = max 0.25 step in
+  let left_step = max 0.25 (1. -. step) in
+  ( (if Random.bool () = true then top_step else Float.neg top_step),
+    if Random.bool () = true then left_step else Float.neg left_step )
+
 let _increase_size creet =
   creet.size <- creet.size +. 0.01;
   creet.top_max <- creet.top_max -. 0.01;
@@ -61,9 +68,9 @@ let _change_direction creet =
     creet.counter <- 0 (* TODO go after a healthy creet if exist *)
   else if creet.counter = creet.max_counter then (
     creet.counter <- 0;
-    let step = Random.float 1. in
-    creet.top_step <- max 0.25 step;
-    creet.left_step <- max 0.25 (1. -. step))
+    let top_step, left_step = _get_random_steps () in
+    creet.top_step <- top_step;
+    creet.left_step <- left_step)
   else creet.counter <- creet.counter + 1
 
 let _move creet =
@@ -85,7 +92,7 @@ let _make_sick creet =
 
 let create size top_max left_max =
   let elt = div ~a:[ a_class [ "creet" ] ] [] in
-  let step = Random.float 1. in
+  let top_step, left_step = _get_random_steps () in
   let creet =
     {
       dom_elt = Html.To_dom.of_div elt;
@@ -98,11 +105,11 @@ let create size top_max left_max =
       top = max 10. (Random.float (top_max -. 10.));
       top_min = -15.;
       top_max;
-      top_step = max 0.25 step;
+      top_step;
       left = max 10. (Random.float (left_max -. 10.));
       left_min = 0.;
       left_max;
-      left_step = max 0.25 (1. -. step);
+      left_step;
     }
   in
   creet.dom_elt##.style##.backgroundColor := _get_bg_color creet.state;
