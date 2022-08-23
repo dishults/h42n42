@@ -14,6 +14,8 @@ type playground = {
   creet_size : float;
   creet_size_min : float;
   creet_size_max : float;
+  creet_top_max : float;
+  creet_left_max : float;
   mutable speed : float;
   mutable creets : creet list;
 }
@@ -25,6 +27,8 @@ let get () =
     creet_size;
     creet_size_min = creet_size *. 0.85;
     creet_size_max = creet_size *. 4.;
+    creet_top_max = 652. -. creet_size;
+    creet_left_max = 1000. -. creet_size;
     speed = 1.;
     creets = [];
   }

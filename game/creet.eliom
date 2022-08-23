@@ -18,12 +18,12 @@ type creet = {
   max_counter : int;
   (* ----- Position ----- *)
   mutable top : float;
-  mutable top_min : int;
-  mutable top_max : int;
+  mutable top_min : float;
+  mutable top_max : float;
   mutable top_step : float;
   mutable left : float;
-  mutable left_min : int;
-  mutable left_max : int;
+  mutable left_min : float;
+  mutable left_max : float;
   mutable left_step : float;
 }
 
@@ -41,23 +41,17 @@ let _get_px number = Js.string (Printf.sprintf "%fpx" number)
 let _get_step position step speed = position +. (step *. speed)
 
 let _increase_size creet =
-  let before = int_of_float creet.size in
   creet.size <- creet.size +. 0.01;
-  let after = int_of_float creet.size in
-  let difference = after - before in
-  creet.top_max <- creet.top_max - difference;
-  creet.left_max <- creet.left_max - difference;
+  creet.top_max <- creet.top_max -. 0.01;
+  creet.left_max <- creet.left_max -. 0.01;
 
   creet.dom_elt##.style##.height := _get_px creet.size;
   creet.dom_elt##.style##.width := _get_px creet.size
 
 let _decrease_size creet =
-  let before = int_of_float creet.size in
   creet.size <- creet.size -. 0.01;
-  let after = int_of_float creet.size in
-  let difference = before - after in
-  creet.top_max <- creet.top_max + difference;
-  creet.left_max <- creet.left_max + difference;
+  creet.top_max <- creet.top_max +. 0.01;
+  creet.left_max <- creet.left_max +. 0.01;
 
   creet.dom_elt##.style##.height := _get_px creet.size;
   creet.dom_elt##.style##.width := _get_px creet.size
@@ -89,7 +83,7 @@ let _make_sick creet =
 
 (* -------------------- Main functions -------------------- *)
 
-let create size =
+let create size top_max left_max =
   let elt = div ~a:[ a_class [ "creet" ] ] [] in
   let step = Random.float 1. in
   let creet =
@@ -101,13 +95,13 @@ let create size =
       counter = 0;
       max_counter = 2500 + Random.int 1000;
       (* ------------------------------- *)
-      top = max 10. (Random.float 590.);
-      top_min = -15;
-      top_max = 602;
+      top = max 10. (Random.float (top_max -. 10.));
+      top_min = -15.;
+      top_max;
       top_step = max 0.25 step;
-      left = max 10. (Random.float 940.);
-      left_min = 0;
-      left_max = 950;
+      left = max 10. (Random.float (left_max -. 10.));
+      left_min = 0.;
+      left_max;
       left_step = max 0.25 (1. -. step);
     }
   in
@@ -117,13 +111,11 @@ let create size =
   creet
 
 let move creet =
-  if List.mem (int_of_float creet.top) [ creet.top_min; creet.top_max ] then (
-    if int_of_float creet.top = creet.top_min && creet.state = Healthy then
-      _make_sick creet;
+  if creet.top <= creet.top_min || creet.top >= creet.top_max then (
+    if creet.top <= creet.top_min && creet.state = Healthy then _make_sick creet;
     creet.top_step <- Float.neg creet.top_step;
     _move creet)
-  else if List.mem (int_of_float creet.left) [ creet.left_min; creet.left_max ]
-  then (
+  else if creet.left <= creet.left_min || creet.left >= creet.left_max then (
     creet.left_step <- Float.neg creet.left_step;
     _move creet);
 
