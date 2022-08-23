@@ -9,8 +9,12 @@ open Js_of_ocaml_lwt
 type creet_state = Healthy | Sick | Berserk | Mean
 
 type creet = {
+  (* General *)
   dom_elt : Dom_html.divElement Js.t;
+  mutable state : creet_state;
+  mutable size : float;
   mutable speed : float; (* TODO global speed passed from playground *)
+  (* Position *)
   mutable top : float;
   mutable top_min : int;
   mutable top_max : int;
@@ -19,7 +23,6 @@ type creet = {
   mutable left_min : int;
   mutable left_max : int;
   mutable left_step : int;
-  mutable state : creet_state;
 }
 
 (* -------------------- Utils -------------------- *)
@@ -57,6 +60,8 @@ let create () =
   let creet =
     {
       dom_elt = Html.To_dom.of_div elt;
+      state = Healthy;
+      size = 50.;
       speed = 1.;
       top = max 10. (Random.float 590.);
       top_min = -15;
@@ -66,10 +71,11 @@ let create () =
       left_min = 0;
       left_max = 950;
       left_step = (if Random.bool () = true then 1 else -1);
-      state = Healthy;
     }
   in
   creet.dom_elt##.style##.backgroundColor := _get_bg_color creet.state;
+  creet.dom_elt##.style##.height := _get_px creet.size;
+  creet.dom_elt##.style##.width := _get_px creet.size;
   creet
 
 let rec move creet =
@@ -85,6 +91,18 @@ let rec move creet =
   then (
     creet.left_step <- creet.left_step * -1;
     _move creet);
+
+  (* Increase size *)
+  if creet.state = Berserk && creet.size < 200. then (
+    let before = int_of_float creet.size in
+    creet.size <- creet.size +. 0.01;
+    let after = int_of_float creet.size in
+    let difference = after - before in
+    creet.top_max <- creet.top_max - difference;
+    creet.left_max <- creet.left_max - difference;
+
+    creet.dom_elt##.style##.height := _get_px creet.size;
+    creet.dom_elt##.style##.width := _get_px creet.size);
 
   (* The above extra moves are needed so that a slow sick creet doesn't get stuck on the edge *)
   _move creet;
