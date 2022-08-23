@@ -84,20 +84,19 @@ let _make_sick creet =
   else if n >= 10 && n < 20 then creet.state <- Mean
   else creet.state <- Sick;
 
-  creet.state <- Mean;
   creet.dom_elt##.style##.backgroundColor := _get_bg_color creet.state;
   creet.speed <- creet.speed *. 0.85
 
 (* -------------------- Main functions -------------------- *)
 
-let create () =
+let create size =
   let elt = div ~a:[ a_class [ "creet" ] ] [] in
   let step = Random.float 1. in
   let creet =
     {
       dom_elt = Html.To_dom.of_div elt;
       state = Healthy;
-      size = 50.;
+      size;
       speed = 1.;
       counter = 0;
       max_counter = 2500 + Random.int 1000;
@@ -117,10 +116,7 @@ let create () =
   creet.dom_elt##.style##.width := _get_px creet.size;
   creet
 
-let rec move creet =
-  (* TODO increasing speed *)
-  let%lwt () = Lwt_js.sleep 0.001 in
-
+let move creet =
   if List.mem (int_of_float creet.top) [ creet.top_min; creet.top_max ] then (
     if int_of_float creet.top = creet.top_min && creet.state = Healthy then
       _make_sick creet;
@@ -138,6 +134,5 @@ let rec move creet =
 
   _change_direction creet;
   (* The above extra moves are needed so that a slow sick creet doesn't get stuck on the edge *)
-  _move creet;
-  move creet
+  _move creet
 (**)]

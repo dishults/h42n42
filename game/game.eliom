@@ -6,16 +6,23 @@ open Js_of_ocaml
 (**)]
 
 [%%client
+open Js_of_ocaml_lwt
+
+let rec _move playground creet =
+  let%lwt () = Lwt_js.sleep 0.001 in
+  Creet.move creet;
+  _move playground creet
+
 let main () =
   Random.self_init ();
   let playground = Playground.get () in
   Firebug.console##log_2 (Js.string "playground") playground;
 
-  let creet = Creet.create () in
+  let creet = Creet.create playground.creet_size in
   Firebug.console##log_2 (Js.string "creet") creet;
 
   Lwt.async (fun () -> Playground.add_creet playground creet);
-  Lwt.async (fun () -> Creet.move creet);
+  Lwt.async (fun () -> _move playground creet);
   Lwt.return ()
 (**)]
 
