@@ -34,7 +34,7 @@ let _get_bg_color state =
     (match state with
     | Healthy -> "dodgerblue"
     | Sick -> "darkblue"
-    | Berserk -> "darkcyan"
+    | Berserk -> "sienna"
     | Mean -> "tomato")
 
 let _get_px number = Js.string (Printf.sprintf "%fpx" number)
@@ -51,8 +51,21 @@ let _increase_size creet =
   creet.dom_elt##.style##.height := _get_px creet.size;
   creet.dom_elt##.style##.width := _get_px creet.size
 
+let _decrease_size creet =
+  let before = int_of_float creet.size in
+  creet.size <- creet.size -. 0.01;
+  let after = int_of_float creet.size in
+  let difference = before - after in
+  creet.top_max <- creet.top_max + difference;
+  creet.left_max <- creet.left_max + difference;
+
+  creet.dom_elt##.style##.height := _get_px creet.size;
+  creet.dom_elt##.style##.width := _get_px creet.size
+
 let _change_direction creet =
-  if creet.counter = creet.max_counter then (
+  if creet.state = Mean then
+    creet.counter <- 0 (* TODO go after a healthy creet if exist *)
+  else if creet.counter = creet.max_counter then (
     creet.counter <- 0;
     let step = Random.float 1. in
     creet.top_step <- max 0.25 step;
@@ -71,6 +84,7 @@ let _make_sick creet =
   else if n >= 10 && n < 20 then creet.state <- Mean
   else creet.state <- Sick;
 
+  creet.state <- Mean;
   creet.dom_elt##.style##.backgroundColor := _get_bg_color creet.state;
   creet.speed <- creet.speed *. 0.85
 
@@ -117,7 +131,10 @@ let rec move creet =
     creet.left_step <- Float.neg creet.left_step;
     _move creet);
 
-  if creet.state = Berserk && creet.size < 200. then _increase_size creet;
+  (match creet.state with
+  | Berserk when creet.size < 200. -> _increase_size creet
+  | Mean when creet.size > 42.5 -> _decrease_size creet
+  | _ -> ());
 
   _change_direction creet;
   (* The above extra moves are needed so that a slow sick creet doesn't get stuck on the edge *)
