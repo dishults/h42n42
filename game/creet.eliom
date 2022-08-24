@@ -77,12 +77,6 @@ let _change_direction creet =
     creet.iter <- creet.iter + 1;
     if creet.state != Healthy then creet.sick_iter <- creet.sick_iter + 1)
 
-let _move creet =
-  creet.top <- _get_step creet.top creet.top_step creet.speed;
-  creet.left <- _get_step creet.left creet.left_step creet.speed;
-  creet.dom_elt##.style##.top := _get_px creet.top;
-  creet.dom_elt##.style##.left := _get_px creet.left
-
 let _make_sick creet =
   let n = Random.int 100 in
   if n < 10 then creet.state <- Berserk
@@ -92,10 +86,19 @@ let _make_sick creet =
   creet.dom_elt##.style##.backgroundColor := _get_bg_color creet.state;
   creet.speed <- creet.speed *. 0.85
 
+let _move creet =
+  creet.top <- _get_step creet.top creet.top_step creet.speed;
+  creet.left <- _get_step creet.left creet.left_step creet.speed;
+  creet.dom_elt##.style##.top := _get_px creet.top;
+  creet.dom_elt##.style##.left := _get_px creet.left
+
 (* -------------------- Main functions -------------------- *)
 
-let create size top_max left_max =
+let create () =
   let elt = div ~a:[ a_class [ "creet" ] ] [] in
+  let size = 50. in
+  let top_max = 652. -. size in
+  let left_max = 1000. -. size in
   let top_step, left_step = _get_random_steps () in
   let creet =
     {

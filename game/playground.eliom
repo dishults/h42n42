@@ -15,11 +15,6 @@ open Creet
 
 type playground = {
   dom_elt : Dom_html.divElement Js.t;
-  creet_size : float;
-  creet_size_min : float;
-  creet_size_max : float;
-  creet_top_max : float;
-  creet_left_max : float;
   mutable speed : float;
   mutable game_on : bool;
   mutable creets : creet list;
@@ -58,25 +53,15 @@ let rec _play playground =
 (* -------------------- Main functions -------------------- *)
 
 let get () =
-  let creet_size = 50. in
   {
     dom_elt = Html.To_dom.of_div ~%elt;
-    creet_size;
-    creet_size_min = creet_size *. 0.85;
-    creet_size_max = creet_size *. 4.;
-    creet_top_max = 652. -. creet_size;
-    creet_left_max = 1000. -. creet_size;
     game_on = true;
     speed = 1.;
     creets = [];
   }
 
 let play playground =
-  let creet =
-    Creet.create playground.creet_size playground.creet_top_max
-      playground.creet_left_max
-  in
-  _add_creet playground creet;
+  _add_creet playground (Creet.create ());
   Lwt.async (fun () -> _play playground);
   Lwt.return ()
 (**)]
