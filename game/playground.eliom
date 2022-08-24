@@ -11,6 +11,8 @@ open Js_of_ocaml
 open Js_of_ocaml_lwt
 open Creet
 
+(* -------------------- Types -------------------- *)
+
 type playground = {
   dom_elt : Dom_html.divElement Js.t;
   creet_size : float;
@@ -22,6 +24,38 @@ type playground = {
   mutable game_on : bool;
   mutable creets : creet list;
 }
+
+(* -------------------- Utils -------------------- *)
+
+let _add_creet playground (creet : creet) =
+  Dom.appendChild playground.dom_elt creet.dom_elt;
+  playground.creets <- creet :: playground.creets
+
+let _remove_creet playground (creet : creet) =
+  Dom.removeChild playground.dom_elt creet.dom_elt;
+  playground.creets <- List.filter (fun c -> c != creet) playground.creets
+
+let _move_creet playground (creet : creet) =
+  Lwt.async (fun () ->
+      let creet_is_alive = Creet.move creet in
+      if not creet_is_alive then _remove_creet playground creet;
+      Lwt.return ())
+
+let _is_game_over playground =
+  List.length playground.creets = 0
+  || not (List.exists (fun creet -> creet.state = Healthy) playground.creets)
+
+let rec _play playground =
+  let%lwt () = Lwt_js.sleep 0.001 in
+  if _is_game_over playground then (
+    alert "GAME OVER";
+    Lwt.return ())
+  else (
+    (* TODO playground.global_speed <- playground.global_speed +. 0.0001; *)
+    List.iter (_move_creet playground) playground.creets;
+    _play playground)
+
+(* -------------------- Main functions -------------------- *)
 
 let get () =
   let creet_size = 50. in
@@ -37,32 +71,12 @@ let get () =
     creets = [];
   }
 
-let add_creet playground (creet : creet) =
-  Dom.appendChild playground.dom_elt creet.dom_elt;
-  playground.creets <- creet :: playground.creets;
-  Firebug.console##log_2 (Js.string "creets_nb") (List.length playground.creets);
+let play playground =
+  let creet =
+    Creet.create playground.creet_size playground.creet_top_max
+      playground.creet_left_max
+  in
+  _add_creet playground creet;
+  Lwt.async (fun () -> _play playground);
   Lwt.return ()
-
-let _remove_creet playground (creet : creet) =
-  Dom.removeChild playground.dom_elt creet.dom_elt;
-  playground.creets <- List.filter (fun c -> c != creet) playground.creets;
-  ()
-
-let _move_creet playground (creet : creet) =
-  let creet_is_alive = Creet.move creet in
-  if not creet_is_alive then _remove_creet playground creet else ()
-
-let _is_game_over playground =
-  List.length playground.creets = 0
-  || not (List.exists (fun creet -> creet.state = Healthy) playground.creets)
-
-let rec play playground =
-  let%lwt () = Lwt_js.sleep 0.001 in
-  if _is_game_over playground then (
-    alert "GAME OVER";
-    Lwt.return ())
-  else (
-    (* TODO playground.global_speed <- playground.global_speed +. 0.0001; *)
-    List.iter (_move_creet playground) playground.creets;
-    play playground)
 (**)]

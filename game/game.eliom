@@ -9,15 +9,6 @@ open Js_of_ocaml
 let main () =
   Random.self_init ();
   let playground = Playground.get () in
-  Firebug.console##log_2 (Js.string "playground") playground;
-
-  let creet =
-    Creet.create playground.creet_size playground.creet_top_max
-      playground.creet_left_max
-  in
-  Firebug.console##log_2 (Js.string "creet") creet;
-
-  Lwt.async (fun () -> Playground.add_creet playground creet);
   Lwt.async (fun () -> Playground.play playground);
   Lwt.return ()
 (**)]
