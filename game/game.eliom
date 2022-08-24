@@ -10,9 +10,12 @@ open Js_of_ocaml_lwt
 
 let rec _move (playground : Playground.playground) creet =
   let%lwt () = Lwt_js.sleep 0.001 in
-  if playground.game_on then (
-    Creet.move creet;
-    _move playground creet)
+  if playground.game_on then
+    let creet_is_alive = Creet.move creet in
+    if creet_is_alive then _move playground creet
+    else (
+      Lwt.async (fun () -> Playground.remove_creet playground creet);
+      Lwt.return ())
   else Lwt.return ()
 
 let _is_game_over (playground : Playground.playground) =

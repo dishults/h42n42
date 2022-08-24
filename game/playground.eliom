@@ -40,4 +40,9 @@ let add_creet playground (creet : creet) =
   playground.creets <- creet :: playground.creets;
   Firebug.console##log_2 (Js.string "creets_nb") (List.length playground.creets);
   Lwt.return ()
+
+let remove_creet playground (creet : creet) =
+  Dom.removeChild playground.dom_elt creet.dom_elt;
+  playground.creets <- List.filter (fun c -> c != creet) playground.creets;
+  Lwt.return ()
 (**)]

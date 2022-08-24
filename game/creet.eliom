@@ -14,8 +14,10 @@ type creet = {
   mutable state : creet_state;
   mutable size : float;
   mutable speed : float; (* TODO global speed passed from playground *)
-  mutable counter : int;
-  max_counter : int;
+  mutable iter : int;
+  mutable sick_iter : int;
+  max_same_direction_iter : int;
+  max_sick_iter : int;
   (* ----- Position ----- *)
   mutable top : float;
   mutable top_min : float;
@@ -65,13 +67,15 @@ let _decrease_size creet =
 
 let _change_direction creet =
   if creet.state = Mean then
-    creet.counter <- 0 (* TODO go after a healthy creet if exist *)
-  else if creet.counter = creet.max_counter then (
-    creet.counter <- 0;
+    creet.iter <- 0 (* TODO go after a healthy creet if exist *)
+  else if creet.iter = creet.max_same_direction_iter then (
+    creet.iter <- 0;
     let top_step, left_step = _get_random_steps () in
     creet.top_step <- top_step;
     creet.left_step <- left_step)
-  else creet.counter <- creet.counter + 1
+  else (
+    creet.iter <- creet.iter + 1;
+    if creet.state != Healthy then creet.sick_iter <- creet.sick_iter + 1)
 
 let _move creet =
   creet.top <- _get_step creet.top creet.top_step creet.speed;
@@ -99,8 +103,10 @@ let create size top_max left_max =
       state = Healthy;
       size;
       speed = 1.;
-      counter = 0;
-      max_counter = 2500 + Random.int 1000;
+      iter = 0;
+      sick_iter = 0;
+      max_same_direction_iter = 2500 + Random.int 1000;
+      max_sick_iter = 3000;
       (* ------------------------------- *)
       top = max 10. (Random.float (top_max -. 10.));
       top_min = -15.;
@@ -133,5 +139,6 @@ let move creet =
 
   _change_direction creet;
   (* The above extra moves are needed so that a slow sick creet doesn't get stuck on the edge *)
-  _move creet
+  _move creet;
+  creet.sick_iter < creet.max_sick_iter
 (**)]
