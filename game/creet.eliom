@@ -10,6 +10,7 @@ type creet_state = Healthy | Sick | Berserk | Mean
 
 type creet = {
   (* ----- General ----- *)
+  elt : Html_types.div elt;
   dom_elt : Dom_html.divElement Js.t;
   mutable state : creet_state;
   mutable size : float;
@@ -66,6 +67,7 @@ let _decrease_size creet =
   creet.dom_elt##.style##.width := _get_px creet.size
 
 let _change_direction creet =
+  if creet.state != Healthy then creet.sick_iter <- creet.sick_iter + 1;
   if creet.state = Mean then
     creet.iter <- 0 (* TODO go after a healthy creet if exist *)
   else if creet.iter = creet.max_same_direction_iter then (
@@ -73,9 +75,7 @@ let _change_direction creet =
     let top_step, left_step = _get_random_steps () in
     creet.top_step <- top_step;
     creet.left_step <- left_step)
-  else (
-    creet.iter <- creet.iter + 1;
-    if creet.state != Healthy then creet.sick_iter <- creet.sick_iter + 1)
+  else creet.iter <- creet.iter + 1
 
 let _make_sick creet =
   let n = Random.int 100 in
@@ -97,11 +97,12 @@ let _move creet =
 let create () =
   let elt = div ~a:[ a_class [ "creet" ] ] [] in
   let size = 50. in
-  let top_max = 652. -. size in
+  let top_max = 700. -. size in
   let left_max = 1000. -. size in
   let top_step, left_step = _get_random_steps () in
   let creet =
     {
+      elt;
       dom_elt = Html.To_dom.of_div elt;
       state = Healthy;
       size;
@@ -111,11 +112,11 @@ let create () =
       max_same_direction_iter = 2500 + Random.int 1000;
       max_sick_iter = 3000;
       (* ------------------------------- *)
-      top = max 10. (Random.float (top_max -. 10.));
-      top_min = -15.;
+      top = max 65. (Random.float (top_max -. 15.));
+      top_min = 35.;
       top_max;
       top_step;
-      left = max 10. (Random.float (left_max -. 10.));
+      left = max 15. (Random.float (left_max -. 15.));
       left_min = 0.;
       left_max;
       left_step;

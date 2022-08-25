@@ -26,14 +26,12 @@ let _add_creet playground (creet : creet) =
   Dom.appendChild playground.dom_elt creet.dom_elt;
   playground.creets <- creet :: playground.creets
 
-let _remove_creet playground (creet : creet) =
-  Dom.removeChild playground.dom_elt creet.dom_elt;
-  playground.creets <- List.filter (fun c -> c != creet) playground.creets
+let _remove_creet creet = Html.Manip.removeSelf creet.elt
 
-let _move_creet playground (creet : creet) =
+let _move_creet creet =
   Lwt.async (fun () ->
       let creet_is_alive = Creet.move creet in
-      if not creet_is_alive then _remove_creet playground creet;
+      if not creet_is_alive then _remove_creet creet;
       Lwt.return ())
 
 let _is_game_over playground =
@@ -47,7 +45,7 @@ let rec _play playground =
     Lwt.return ())
   else (
     (* TODO playground.global_speed <- playground.global_speed +. 0.0001; *)
-    List.iter (_move_creet playground) playground.creets;
+    List.iter _move_creet playground.creets;
     _play playground)
 
 (* -------------------- Main functions -------------------- *)
@@ -61,7 +59,9 @@ let get () =
   }
 
 let play playground =
-  _add_creet playground (Creet.create ());
+  for _ = 1 to 3 do
+    _add_creet playground (Creet.create ())
+  done;
   Lwt.async (fun () -> _play playground);
   Lwt.return ()
 (**)]

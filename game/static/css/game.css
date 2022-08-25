@@ -2,9 +2,13 @@
     font-family: sans-serif;
 }
 
+body {
+    margin: unset;
+}
+
 .gameboard {
-    width: 1000px;
     height: 700px;
+    width: 1000px;
     background-color: #f0f0f0;
 
     /* Hospital */
@@ -13,16 +17,16 @@
 }
 
 .river {
-    height: 7%;
+    height: 50px;
     background-color: #4ab3b4;
 }
 
 .playground {
-    height: 93%;
+    height: 650px;
 }
 
 .creet {
     border-radius: 50%;
     display: inline-block;
-    position: relative;
+    position: absolute;
 }
