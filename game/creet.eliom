@@ -43,9 +43,9 @@ let _get_px number = Js.string (Printf.sprintf "%fpx" number)
 let _get_step position step speed = position +. (step *. speed)
 
 let _get_random_steps () =
-  let step = Random.float 1. in
-  let top_step = max 0.25 step in
-  let left_step = max 0.25 (1. -. step) in
+  let step = max 0.25 (Random.float 0.75) in
+  let top_step = step in
+  let left_step = 1. -. step in
   ( (if Random.bool () = true then top_step else Float.neg top_step),
     if Random.bool () = true then left_step else Float.neg left_step )
 
