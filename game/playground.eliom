@@ -16,14 +16,14 @@ open Creet
 type playground = {
   dom_elt : Dom_html.divElement Js.t;
   mutable iter : int;
-  mutable speed : float;
+  mutable global_speed : float ref;
   mutable creets : creet list;
 }
 
 (* -------------------- Utils -------------------- *)
 
 let _add_creet playground =
-  let creet = Creet.create () in
+  let creet = Creet.create playground.global_speed in
   Dom.appendChild playground.dom_elt creet.dom_elt;
   playground.creets <- creet :: playground.creets
 
@@ -37,6 +37,8 @@ let _move_creet playground creet =
       if not creet_is_alive then _remove_creet playground creet;
       Lwt.return ())
 
+let _increment_global_speed gs = gs := !gs +. 0.0001
+
 let _is_game_over playground =
   not (List.exists (fun creet -> creet.state = Healthy) playground.creets)
 
@@ -46,7 +48,7 @@ let rec _play playground =
     alert "GAME OVER";
     Lwt.return ())
   else (
-    (* TODO playground.global_speed <- playground.global_speed +. 0.0001; *)
+    _increment_global_speed playground.global_speed;
     playground.iter <- playground.iter + 1;
     if playground.iter = 3000 then (
       _add_creet playground;
@@ -57,7 +59,12 @@ let rec _play playground =
 (* -------------------- Main functions -------------------- *)
 
 let get () =
-  { dom_elt = Html.To_dom.of_div ~%elt; iter = 0; speed = 1.; creets = [] }
+  {
+    dom_elt = Html.To_dom.of_div ~%elt;
+    iter = 0;
+    global_speed = ref 0.;
+    creets = [];
+  }
 
 let play playground =
   for _ = 1 to 3 do

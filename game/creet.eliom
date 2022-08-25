@@ -15,6 +15,7 @@ type creet = {
   mutable state : creet_state;
   mutable size : float;
   mutable speed : float; (* TODO global speed passed from playground *)
+  mutable global_speed : float ref;
   mutable iter : int;
   mutable sick_iter : int;
   max_same_direction_iter : int;
@@ -40,7 +41,9 @@ let _get_bg_color state =
     | Mean -> "tomato")
 
 let _get_px number = Js.string (Printf.sprintf "%fpx" number)
-let _get_step position step speed = position +. (step *. speed)
+
+let _get_position position step speed global_speed =
+  position +. (step *. (speed +. !global_speed))
 
 let _get_random_steps () =
   let step = max 0.25 (Random.float 0.75) in
@@ -86,14 +89,16 @@ let _make_sick creet =
   creet.speed <- 0.85
 
 let _move creet =
-  creet.top <- _get_step creet.top creet.top_step creet.speed;
-  creet.left <- _get_step creet.left creet.left_step creet.speed;
+  creet.top <-
+    _get_position creet.top creet.top_step creet.speed creet.global_speed;
+  creet.left <-
+    _get_position creet.left creet.left_step creet.speed creet.global_speed;
   creet.dom_elt##.style##.top := _get_px creet.top;
   creet.dom_elt##.style##.left := _get_px creet.left
 
 (* -------------------- Main functions -------------------- *)
 
-let create () =
+let create global_speed =
   let elt = div ~a:[ a_class [ "creet" ] ] [] in
   let size = 50. in
   let top_max = 700. -. size in
@@ -106,6 +111,7 @@ let create () =
       state = Healthy;
       size;
       speed = 1.;
+      global_speed;
       iter = 0;
       sick_iter = 0;
       max_same_direction_iter = 2500 + Random.int 1000;
