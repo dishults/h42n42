@@ -22,7 +22,8 @@ type playground = {
 
 (* -------------------- Utils -------------------- *)
 
-let _add_creet playground (creet : creet) =
+let _add_creet playground =
+  let creet = Creet.create () in
   Dom.appendChild playground.dom_elt creet.dom_elt;
   playground.creets <- creet :: playground.creets
 
@@ -48,7 +49,7 @@ let rec _play playground =
     (* TODO playground.global_speed <- playground.global_speed +. 0.0001; *)
     playground.iter <- playground.iter + 1;
     if playground.iter = 3000 then (
-      _add_creet playground (Creet.create ());
+      _add_creet playground;
       playground.iter <- 0);
     List.iter (_move_creet playground) playground.creets;
     _play playground)
@@ -60,7 +61,7 @@ let get () =
 
 let play playground =
   for _ = 1 to 3 do
-    _add_creet playground (Creet.create ())
+    _add_creet playground
   done;
   Lwt.async (fun () -> _play playground);
   Lwt.return ()
