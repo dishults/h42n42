@@ -18,7 +18,6 @@ type creet = {
   mutable iter : int;
   mutable sick_iter : int;
   max_same_direction_iter : int;
-  max_sick_iter : int;
   (* ----- Position ----- *)
   mutable top : float;
   mutable top_min : float;
@@ -51,17 +50,17 @@ let _get_random_steps () =
     if Random.bool () = true then left_step else Float.neg left_step )
 
 let _increase_size creet =
-  creet.size <- creet.size +. 0.01;
-  creet.top_max <- creet.top_max -. 0.01;
-  creet.left_max <- creet.left_max -. 0.01;
+  creet.size <- creet.size +. 0.05;
+  creet.top_max <- creet.top_max -. 0.05;
+  creet.left_max <- creet.left_max -. 0.05;
 
   creet.dom_elt##.style##.height := _get_px creet.size;
   creet.dom_elt##.style##.width := _get_px creet.size
 
 let _decrease_size creet =
-  creet.size <- creet.size -. 0.01;
-  creet.top_max <- creet.top_max +. 0.01;
-  creet.left_max <- creet.left_max +. 0.01;
+  creet.size <- creet.size -. 0.0025;
+  creet.top_max <- creet.top_max +. 0.0025;
+  creet.left_max <- creet.left_max +. 0.0025;
 
   creet.dom_elt##.style##.height := _get_px creet.size;
   creet.dom_elt##.style##.width := _get_px creet.size
@@ -84,7 +83,7 @@ let _make_sick creet =
   else creet.state <- Sick;
 
   creet.dom_elt##.style##.backgroundColor := _get_bg_color creet.state;
-  creet.speed <- creet.speed *. 0.85
+  creet.speed <- 0.85
 
 let _move creet =
   creet.top <- _get_step creet.top creet.top_step creet.speed;
@@ -110,7 +109,6 @@ let create () =
       iter = 0;
       sick_iter = 0;
       max_same_direction_iter = 2500 + Random.int 1000;
-      max_sick_iter = 3000;
       (* ------------------------------- *)
       top = max 65. (Random.float (top_max -. 15.));
       top_min = 35.;
@@ -136,13 +134,19 @@ let move creet =
     creet.left_step <- Float.neg creet.left_step;
     _move creet);
 
-  (match creet.state with
-  | Berserk when creet.size < 200. -> _increase_size creet
-  | Mean when creet.size > 42.5 -> _decrease_size creet
-  | _ -> ());
-
   _change_direction creet;
   (* The above extra moves are needed so that a slow sick creet doesn't get stuck on the edge *)
   _move creet;
-  creet.sick_iter < creet.max_sick_iter
+
+  (* Return if creet is alive *)
+  match creet.state with
+  | Healthy -> true
+  | Sick -> creet.sick_iter < 3000
+  | Berserk when creet.size < 200. ->
+      _increase_size creet;
+      true
+  | Mean when creet.size > 42.5 ->
+      _decrease_size creet;
+      true
+  | _ -> false
 (**)]

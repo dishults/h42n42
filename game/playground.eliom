@@ -35,8 +35,7 @@ let _move_creet creet =
       Lwt.return ())
 
 let _is_game_over playground =
-  List.length playground.creets = 0
-  || not (List.exists (fun creet -> creet.state = Healthy) playground.creets)
+  not (List.exists (fun creet -> creet.state = Healthy) playground.creets)
 
 let rec _play playground =
   let%lwt () = Lwt_js.sleep 0.001 in
