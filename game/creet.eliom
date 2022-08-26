@@ -88,6 +88,17 @@ let _make_sick creet =
   creet.dom_elt##.style##.backgroundColor := _get_bg_color creet.state;
   creet.speed <- 0.85
 
+let _check_intersection healthy sick =
+  let healthy_bottom = healthy.top +. healthy.size in
+  let healthy_right = healthy.left +. healthy.size in
+  let sick_bottom = sick.top +. sick.size in
+  let sick_right = sick.left +. sick.size in
+  if
+    healthy_bottom > sick.top && healthy_right > sick.left
+    && healthy.top < sick_bottom && healthy.left < sick_right
+    && Random.int 100 < 2
+  then _make_sick healthy
+
 let _move creet =
   creet.top <-
     _get_position creet.top creet.top_step creet.speed creet.global_speed;
@@ -130,6 +141,17 @@ let create global_speed =
   creet.dom_elt##.style##.height := _get_px creet.size;
   creet.dom_elt##.style##.width := _get_px creet.size;
   creet
+
+let check creets =
+  let healthy_creets =
+    List.filter (fun creet -> creet.state = Healthy) creets
+  in
+  let sick_creets = List.filter (fun creet -> creet.state != Healthy) creets in
+  let iter_healthy healthy =
+    List.iter (_check_intersection healthy) sick_creets
+  in
+  List.iter iter_healthy healthy_creets;
+  List.exists (fun creet -> creet.state = Healthy) creets
 
 let move creet =
   if creet.top <= creet.top_min || creet.top >= creet.top_max then (

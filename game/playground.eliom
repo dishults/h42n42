@@ -50,12 +50,10 @@ let _move_creet playground creet =
 
 let _increment_global_speed gs = gs := !gs +. 0.0001
 
-let _is_game_over playground =
-  not (List.exists (fun creet -> creet.state = Healthy) playground.creets)
-
 let rec _play playground =
   let%lwt () = Lwt_js.sleep 0.001 in
-  if _is_game_over playground then (
+  let game_ok = Creet.check playground.creets in
+  if not game_ok then (
     alert "GAME OVER";
     Lwt.return ())
   else (
