@@ -30,3 +30,7 @@ body {
     display: inline-block;
     position: absolute;
 }
+
+.creets-counter {
+    padding: 15px;
+}

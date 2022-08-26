@@ -33,7 +33,7 @@ let page =
           Playground.elt;
           (* Hospital is a dashed line at the bottom *)
         ];
-      (* TODO add creets counter *)
+      Playground.creets_counter_div;
     ]
 
 let () =

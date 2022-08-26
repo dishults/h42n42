@@ -2,6 +2,7 @@
 open Eliom_content.Html.D
 
 let elt = div ~a:[ a_class [ "playground" ] ] []
+let creets_counter_div = div ~a:[ a_class [ "creets-counter" ] ] []
 (**)]
 
 [%%client
@@ -15,6 +16,7 @@ open Creet
 
 type playground = {
   dom_elt : Dom_html.divElement Js.t;
+  mutable dom_creets_counter_span : Html_types.span elt;
   mutable iter : int;
   mutable global_speed : float ref;
   mutable creets : creet list;
@@ -22,14 +24,24 @@ type playground = {
 
 (* -------------------- Utils -------------------- *)
 
+let _update_dom_creets_counter playground =
+  let creets_nb = List.length playground.creets in
+  let plural = if creets_nb = 1 then ' ' else 's' in
+  let new_count = span [ txt (Printf.sprintf "%d creet%c" creets_nb plural) ] in
+  let old_count = playground.dom_creets_counter_span in
+  Html.Manip.replaceSelf old_count new_count;
+  playground.dom_creets_counter_span <- new_count
+
 let _add_creet playground =
   let creet = Creet.create playground.global_speed in
   Dom.appendChild playground.dom_elt creet.dom_elt;
-  playground.creets <- creet :: playground.creets
+  playground.creets <- creet :: playground.creets;
+  _update_dom_creets_counter playground
 
 let _remove_creet playground (creet : creet) =
   Html.Manip.removeSelf creet.elt;
-  playground.creets <- List.filter (fun c -> c != creet) playground.creets
+  playground.creets <- List.filter (fun c -> c != creet) playground.creets;
+  _update_dom_creets_counter playground
 
 let _move_creet playground creet =
   Lwt.async (fun () ->
@@ -59,12 +71,21 @@ let rec _play playground =
 (* -------------------- Main functions -------------------- *)
 
 let get () =
-  {
-    dom_elt = Html.To_dom.of_div ~%elt;
-    iter = 0;
-    global_speed = ref 0.;
-    creets = [];
-  }
+  let playground =
+    {
+      dom_elt = Html.To_dom.of_div ~%elt;
+      dom_creets_counter_span = span [ txt "0 creets" ];
+      iter = 0;
+      global_speed = ref 0.;
+      creets = [];
+    }
+  in
+  let dom_creets_counter_div = Html.To_dom.of_div ~%creets_counter_div in
+  let dom_creets_counter_span =
+    Html.To_dom.of_element playground.dom_creets_counter_span
+  in
+  Dom.appendChild dom_creets_counter_div dom_creets_counter_span;
+  playground
 
 let play playground =
   for _ = 1 to 3 do
