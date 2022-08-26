@@ -42,9 +42,9 @@ let _remove_creet playground (creet : creet) =
   playground.creets <- List.filter (fun c -> c != creet) playground.creets;
   _update_dom_creets_counter playground
 
-let _move_creet playground creet =
+let _move_creet playground creets creet =
   Lwt.async (fun () ->
-      let creet_is_alive = Creet.move creet in
+      let creet_is_alive = Creet.move creets creet in
       if not creet_is_alive then _remove_creet playground creet;
       Lwt.return ())
 
@@ -52,8 +52,11 @@ let _increment_global_speed gs = gs := !gs +. 0.0001
 
 let rec _play playground =
   let%lwt () = Lwt_js.sleep 0.001 in
-  let game_ok = Creet.check playground.creets in
-  if not game_ok then (
+  let healthy, sick =
+    List.partition (fun c -> c.state = Healthy) playground.creets
+  in
+  let creets = { healthy; sick } in
+  if List.length healthy = 0 then (
     alert "GAME OVER";
     Lwt.return ())
   else (
@@ -62,7 +65,7 @@ let rec _play playground =
     if playground.iter = 3000 then (
       _add_creet playground;
       playground.iter <- 0);
-    List.iter (_move_creet playground) playground.creets;
+    List.iter (_move_creet playground creets) playground.creets;
     _play playground)
 
 (* -------------------- Main functions -------------------- *)

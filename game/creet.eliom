@@ -30,6 +30,8 @@ type creet = {
   mutable left_step : float;
 }
 
+type filtered_creets = { healthy : creet list; sick : creet list }
+
 (* -------------------- Utils -------------------- *)
 
 let _get_bg_color state =
@@ -142,18 +144,7 @@ let create global_speed =
   creet.dom_elt##.style##.width := _get_px creet.size;
   creet
 
-let check creets =
-  let healthy_creets =
-    List.filter (fun creet -> creet.state = Healthy) creets
-  in
-  let sick_creets = List.filter (fun creet -> creet.state != Healthy) creets in
-  let iter_healthy healthy =
-    List.iter (_check_intersection healthy) sick_creets
-  in
-  List.iter iter_healthy healthy_creets;
-  List.exists (fun creet -> creet.state = Healthy) creets
-
-let move creet =
+let move creets creet =
   if creet.top <= creet.top_min || creet.top >= creet.top_max then (
     if creet.top <= creet.top_min && creet.state = Healthy then _make_sick creet;
     creet.top_step <- Float.neg creet.top_step;
@@ -168,13 +159,18 @@ let move creet =
 
   (* Return if creet is alive *)
   match creet.state with
-  | Healthy -> true
+  | Healthy ->
+      List.iter (_check_intersection creet) creets.sick;
+      true
   | Sick -> creet.sick_iter < 3000
-  | Berserk when creet.size < 200. ->
-      _increase_size creet;
-      true
-  | Mean when creet.size > 42.5 ->
-      _decrease_size creet;
-      true
-  | _ -> false
+  | Berserk ->
+      if creet.size < 200. then (
+        _increase_size creet;
+        true)
+      else false
+  | Mean ->
+      if creet.size > 42.5 then (
+        _decrease_size creet;
+        true)
+      else false
 (**)]
