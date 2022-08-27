@@ -54,6 +54,20 @@ let _get_random_steps () =
   ( (if Random.bool () = true then top_step else Float.neg top_step),
     if Random.bool () = true then left_step else Float.neg left_step )
 
+let _get_distance mean i healthy =
+  ( float_of_int i,
+    Float.abs ((mean.left -. healthy.left +. (mean.top +. healthy.top)) /. 2.)
+  )
+
+let rec _get_list_min ?(i = 1) a list list_length =
+  let a_index, a_value = a in
+  if i < list_length then
+    let b = List.nth list i in
+    let b_index, b_value = b in
+    if b_value < a_value then _get_list_min ~i:(i + 1) b list list_length
+    else _get_list_min ~i:(i + 1) a list list_length
+  else a
+
 let _increase_size creet =
   creet.size <- creet.size +. 0.05;
   creet.top_max <- creet.top_max -. 0.05;
@@ -171,6 +185,13 @@ let move creets creet =
   | Mean ->
       if creet.size > 42.5 then (
         _decrease_size creet;
+        let proximity = List.mapi (_get_distance creet) creets.healthy in
+        let index, _ =
+          _get_list_min (List.hd proximity) proximity (List.length proximity)
+        in
+        let closest_creet = List.nth creets.healthy (int_of_float index) in
+        Firebug.console##log closest_creet;
+        (* TODO go after a healthy creet *)
         true)
       else false
 (**)]
