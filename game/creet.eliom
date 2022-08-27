@@ -115,6 +115,13 @@ let _check_intersection healthy sick =
     && Random.int 100 < 2
   then _make_sick healthy
 
+let _find_closest_creet creet creets =
+  let proximity = List.mapi (_get_distance creet) creets in
+  let index, _ =
+    _get_list_min (List.hd proximity) proximity (List.length proximity)
+  in
+  List.nth creets (int_of_float index)
+
 let _move creet =
   creet.top <-
     _get_position creet.top creet.top_step creet.speed creet.global_speed;
@@ -185,12 +192,8 @@ let move creets creet =
   | Mean ->
       if creet.size > 42.5 then (
         _decrease_size creet;
-        let proximity = List.mapi (_get_distance creet) creets.healthy in
-        let index, _ =
-          _get_list_min (List.hd proximity) proximity (List.length proximity)
-        in
-        let closest_creet = List.nth creets.healthy (int_of_float index) in
-        Firebug.console##log closest_creet;
+        let closest_healthy_creet = _find_closest_creet creet creets.healthy in
+        Firebug.console##log closest_healthy_creet;
         (* TODO go after a healthy creet *)
         true)
       else false
