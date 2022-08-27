@@ -84,10 +84,28 @@ let _decrease_size creet =
   creet.dom_elt##.style##.height := _get_px creet.size;
   creet.dom_elt##.style##.width := _get_px creet.size
 
-let _change_direction creet =
+let _find_closest_creet creet creets =
+  let proximity = List.mapi (_get_distance creet) creets in
+  let index, _ =
+    _get_list_min (List.hd proximity) proximity (List.length proximity)
+  in
+  List.nth creets (int_of_float index)
+
+let _go_after_healthy_creet creet creets =
+  let closest_healthy_creet = _find_closest_creet creet creets in
+  let top_diff = closest_healthy_creet.top -. creet.top in
+  let left_diff = closest_healthy_creet.left -. creet.left in
+  let total = Float.abs top_diff +. Float.abs left_diff in
+  creet.top_step <- top_diff /. total;
+  creet.left_step <- left_diff /. total
+
+let _change_direction creet creets =
   if creet.state != Healthy then creet.sick_iter <- creet.sick_iter + 1;
-  if creet.state = Mean then
-    creet.iter <- 0 (* TODO go after a healthy creet if exist *)
+
+  if creet.state = Mean then (
+    creet.iter <- 0;
+    if creet.top -. 1. > creet.top_min then
+      _go_after_healthy_creet creet creets.healthy)
   else if creet.iter = creet.max_same_direction_iter then (
     creet.iter <- 0;
     let top_step, left_step = _get_random_steps () in
@@ -114,21 +132,6 @@ let _check_intersection healthy sick =
     && healthy.top < sick_bottom && healthy.left < sick_right
     && Random.int 100 < 2
   then _make_sick healthy
-
-let _find_closest_creet creet creets =
-  let proximity = List.mapi (_get_distance creet) creets in
-  let index, _ =
-    _get_list_min (List.hd proximity) proximity (List.length proximity)
-  in
-  List.nth creets (int_of_float index)
-
-let _go_after_healthy_creet creet creets =
-  let closest_healthy_creet = _find_closest_creet creet creets in
-  let top_diff = closest_healthy_creet.top -. creet.top in
-  let left_diff = closest_healthy_creet.left -. creet.left in
-  let total = Float.abs top_diff +. Float.abs left_diff in
-  creet.top_step <- top_diff /. total;
-  creet.left_step <- left_diff /. total
 
 let _move creet =
   creet.top <-
@@ -182,7 +185,7 @@ let move creets creet =
     creet.left_step <- Float.neg creet.left_step;
     _move creet);
 
-  _change_direction creet;
+  _change_direction creet creets;
   (* The above extra moves are needed so that a slow sick creet doesn't get stuck on the edge *)
   _move creet;
 
@@ -199,8 +202,6 @@ let move creets creet =
       else false
   | Mean ->
       if creet.size > 42.5 then (
-        if creet.top -. 1. > creet.top_min then
-          _go_after_healthy_creet creet creets.healthy;
         _decrease_size creet;
         true)
       else false
