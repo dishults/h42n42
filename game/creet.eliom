@@ -122,6 +122,14 @@ let _find_closest_creet creet creets =
   in
   List.nth creets (int_of_float index)
 
+let _go_after_healthy_creet creet creets =
+  let closest_healthy_creet = _find_closest_creet creet creets in
+  let top_diff = closest_healthy_creet.top -. creet.top in
+  let left_diff = closest_healthy_creet.left -. creet.left in
+  let total = Float.abs top_diff +. Float.abs left_diff in
+  creet.top_step <- top_diff /. total;
+  creet.left_step <- left_diff /. total
+
 let _move creet =
   creet.top <-
     _get_position creet.top creet.top_step creet.speed creet.global_speed;
@@ -191,10 +199,9 @@ let move creets creet =
       else false
   | Mean ->
       if creet.size > 42.5 then (
+        if creet.top -. 1. > creet.top_min then
+          _go_after_healthy_creet creet creets.healthy;
         _decrease_size creet;
-        let closest_healthy_creet = _find_closest_creet creet creets.healthy in
-        Firebug.console##log closest_healthy_creet;
-        (* TODO go after a healthy creet *)
         true)
       else false
 (**)]
