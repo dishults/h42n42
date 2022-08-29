@@ -13,7 +13,7 @@ type creet = {
   elt : Html_types.div elt;
   dom_elt : Dom_html.divElement Js.t;
   mutable state : creet_state;
-  mutable size : float;
+  mutable size : float; (* diameter *)
   mutable speed : float; (* TODO global speed passed from playground *)
   mutable global_speed : float ref;
   mutable iter : int;
@@ -122,16 +122,15 @@ let _make_sick creet =
   creet.dom_elt##.style##.backgroundColor := _get_bg_color creet.state;
   creet.speed <- 0.85
 
-let _check_intersection healthy sick =
-  let healthy_bottom = healthy.top +. healthy.size in
-  let healthy_right = healthy.left +. healthy.size in
-  let sick_bottom = sick.top +. sick.size in
-  let sick_right = sick.left +. sick.size in
-  if
-    healthy_bottom > sick.top && healthy_right > sick.left
-    && healthy.top < sick_bottom && healthy.left < sick_right
-    && Random.int 100 < 2
-  then _make_sick healthy
+let _circles_intersect c1 c2 =
+  let r1 = c1.size /. 2. in
+  let x1 = c1.left +. r1 in
+  let y1 = c1.top +. r1 in
+  let r2 = c2.size /. 2. in
+  let x2 = c2.left +. r2 in
+  let y2 = c2.top +. r2 in
+  let distance = Float.sqrt (((x1 -. x2) ** 2.) +. ((y1 -. y2) ** 2.)) in
+  distance <= r1 +. r2
 
 let _move creet =
   creet.top <-
@@ -192,7 +191,11 @@ let move creets creet =
   (* Return if creet is alive *)
   match creet.state with
   | Healthy ->
-      List.iter (_check_intersection creet) creets.sick;
+      let _check_intersection sick =
+        if _circles_intersect creet sick && Random.int 100 < 2 then
+          _make_sick creet
+      in
+      List.iter _check_intersection creets.sick;
       true
   | Sick -> creet.sick_iter < 3000
   | Berserk ->
