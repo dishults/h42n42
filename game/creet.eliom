@@ -54,20 +54,6 @@ let _get_random_steps () =
   ( (if Random.bool () = true then top_step else Float.neg top_step),
     if Random.bool () = true then left_step else Float.neg left_step )
 
-let _get_distance mean i healthy =
-  ( float_of_int i,
-    Float.abs ((mean.left -. healthy.left +. (mean.top +. healthy.top)) /. 2.)
-  )
-
-let rec _get_list_min ?(i = 1) a list list_length =
-  let a_index, a_value = a in
-  if i < list_length then
-    let b = List.nth list i in
-    let b_index, b_value = b in
-    if b_value < a_value then _get_list_min ~i:(i + 1) b list list_length
-    else _get_list_min ~i:(i + 1) a list list_length
-  else a
-
 let _increase_size creet =
   creet.size <- creet.size +. 0.05;
   creet.top_max <- creet.top_max -. 0.05;
@@ -84,12 +70,34 @@ let _decrease_size creet =
   creet.dom_elt##.style##.height := _get_px creet.size;
   creet.dom_elt##.style##.width := _get_px creet.size
 
-let _find_closest_creet creet creets =
-  let proximity = List.mapi (_get_distance creet) creets in
-  let index, _ =
-    _get_list_min (List.hd proximity) proximity (List.length proximity)
-  in
-  List.nth creets (int_of_float index)
+let rec _get_list_min ?(b_i = 1) ?(a_i = 0) a list list_length =
+  if b_i < list_length then
+    let b = List.nth list b_i in
+    if b < a then _get_list_min ~b_i:(b_i + 1) ~a_i:b_i b list list_length
+    else _get_list_min ~b_i:(b_i + 1) ~a_i a list list_length
+  else (a_i, a)
+
+let _get_distance_between_circles c1 c2 =
+  let r1 = c1.size /. 2. in
+  let x1 = c1.left +. r1 in
+  let y1 = c1.top +. r1 in
+  let r2 = c2.size /. 2. in
+  let x2 = c2.left +. r2 in
+  let y2 = c2.top +. r2 in
+  Float.sqrt (((x1 -. x2) ** 2.) +. ((y1 -. y2) ** 2.))
+
+let _find_closest_creet c1 creets =
+  let distances = List.map (_get_distance_between_circles c1) creets in
+  let first_distance = List.hd distances in
+  let distances_length = List.length distances in
+  let i, _ = _get_list_min first_distance distances distances_length in
+  List.nth creets i
+
+let _circles_intersect c1 c2 =
+  let r1 = c1.size /. 2. in
+  let r2 = c2.size /. 2. in
+  let distance = _get_distance_between_circles c1 c2 in
+  distance <= r1 +. r2
 
 let _go_after_healthy_creet creet creets =
   let closest_healthy_creet = _find_closest_creet creet creets in
@@ -121,16 +129,6 @@ let _make_sick creet =
 
   creet.dom_elt##.style##.backgroundColor := _get_bg_color creet.state;
   creet.speed <- 0.85
-
-let _circles_intersect c1 c2 =
-  let r1 = c1.size /. 2. in
-  let x1 = c1.left +. r1 in
-  let y1 = c1.top +. r1 in
-  let r2 = c2.size /. 2. in
-  let x2 = c2.left +. r2 in
-  let y2 = c2.top +. r2 in
-  let distance = Float.sqrt (((x1 -. x2) ** 2.) +. ((y1 -. y2) ** 2.)) in
-  distance <= r1 +. r2
 
 let _move creet =
   creet.top <-
