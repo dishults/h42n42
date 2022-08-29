@@ -107,20 +107,6 @@ let _go_after_healthy_creet creet creets =
   creet.top_step <- top_diff /. total;
   creet.left_step <- left_diff /. total
 
-let _change_direction creet creets =
-  if creet.state != Healthy then creet.sick_iter <- creet.sick_iter + 1;
-
-  if creet.state = Mean then (
-    creet.iter <- 0;
-    if creet.top -. 1. > creet.top_min then
-      _go_after_healthy_creet creet creets.healthy)
-  else if creet.iter = creet.max_same_direction_iter then (
-    creet.iter <- 0;
-    let top_step, left_step = _get_random_steps () in
-    creet.top_step <- top_step;
-    creet.left_step <- left_step)
-  else creet.iter <- creet.iter + 1
-
 let _make_sick creet =
   let n = Random.int 100 in
   if n < 10 then creet.state <- Berserk
@@ -137,6 +123,28 @@ let _move creet =
     _get_position creet.left creet.left_step creet.speed creet.global_speed;
   creet.dom_elt##.style##.top := _get_px creet.top;
   creet.dom_elt##.style##.left := _get_px creet.left
+
+let _check_direction creet creets =
+  (* Check if creet is on the edge and should turn around *)
+  if creet.top <= creet.top_min || creet.top >= creet.top_max then (
+    if creet.top <= creet.top_min && creet.state = Healthy then _make_sick creet;
+    creet.top_step <- Float.neg creet.top_step;
+    _move creet)
+  else if creet.left <= creet.left_min || creet.left >= creet.left_max then (
+    creet.left_step <- Float.neg creet.left_step;
+    (* Those extra moves are needed so that a creet doesn't get stuck on edges *)
+    _move creet);
+
+  (* Go after another creet or make a surprise direction change *)
+  if creet.state = Mean then (
+    creet.iter <- 0;
+    if creet.top -. 1. > creet.top_min then
+      _go_after_healthy_creet creet creets.healthy)
+  else if creet.iter = creet.max_same_direction_iter then (
+    creet.iter <- 0;
+    let top_step, left_step = _get_random_steps () in
+    creet.top_step <- top_step;
+    creet.left_step <- left_step)
 
 (* -------------------- Main functions -------------------- *)
 
@@ -174,16 +182,8 @@ let create global_speed =
   creet
 
 let move creets creet =
-  if creet.top <= creet.top_min || creet.top >= creet.top_max then (
-    if creet.top <= creet.top_min && creet.state = Healthy then _make_sick creet;
-    creet.top_step <- Float.neg creet.top_step;
-    _move creet)
-  else if creet.left <= creet.left_min || creet.left >= creet.left_max then (
-    creet.left_step <- Float.neg creet.left_step;
-    _move creet);
-
-  _change_direction creet creets;
-  (* The above extra moves are needed so that a slow sick creet doesn't get stuck on the edge *)
+  creet.iter <- creet.iter + 1;
+  _check_direction creet creets;
   _move creet;
 
   (* Return if creet is alive *)
@@ -195,7 +195,9 @@ let move creets creet =
       in
       List.iter _check_intersection creets.sick;
       true
-  | Sick -> creet.sick_iter < 3000
+  | Sick ->
+      creet.sick_iter <- creet.sick_iter + 1;
+      creet.sick_iter < 3000
   | Berserk ->
       if creet.size < 200. then (
         _increase_size creet;
