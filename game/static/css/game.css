@@ -4,9 +4,8 @@
 
 body {
     margin: unset;
-    user-select: none;
-    /* Safari */
     -webkit-user-select: none;
+    user-select: none;
 }
 
 .gameboard {
@@ -32,6 +31,7 @@ body {
     border-radius: 50%;
     display: inline-block;
     position: absolute;
+    cursor: grab;
 }
 
 .creets-counter {

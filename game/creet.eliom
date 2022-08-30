@@ -16,7 +16,7 @@ type creet = {
   mutable available : bool;
   mutable state : creet_state;
   mutable size : float; (* diameter *)
-  mutable speed : float; (* TODO global speed passed from playground *)
+  mutable speed : float;
   mutable global_speed : float ref;
   mutable iter : int;
   mutable sick_iter : int;
@@ -180,11 +180,12 @@ let _event_handler creet event =
   creet.top <- max creet.top_min (min creet.top_max top);
   creet.dom_elt##.style##.top := _get_px creet.top;
   creet.dom_elt##.style##.left := _get_px creet.left;
-  (* Heal creet if it was brought to the hospital *)
+  (* Heal creet if it was taken to the hospital *)
   if creet.state != Healthy && creet.top >= creet.top_max then _heal creet
 
 let _handle_events creet mouse_down _ =
   creet.available <- false;
+  creet.dom_elt##.style##.cursor := Js.string "grabbing";
   _event_handler creet mouse_down;
   Lwt.pick
     [
@@ -194,6 +195,7 @@ let _handle_events creet mouse_down _ =
       (let%lwt mouse_up = mouseup Dom_html.document in
        _event_handler creet mouse_up;
        creet.available <- true;
+       creet.dom_elt##.style##.cursor := Js.string "grab";
        Lwt.return ());
     ]
 

@@ -23,8 +23,6 @@ type playground = {
 
 (* -------------------- Utils -------------------- *)
 
-let deref r = !r
-
 let _update_dom_creets_counter playground =
   let creets_nb = List.length playground.creets in
   let plural = if creets_nb = 1 then ' ' else 's' in
@@ -61,7 +59,7 @@ let rec _play playground =
     alert "GAME OVER";
     Lwt.return ())
   else (
-    playground.global_speed := deref playground.global_speed +. 0.0001;
+    playground.global_speed := !(playground.global_speed) +. 0.0001;
     playground.iter <- playground.iter + 1;
     if playground.iter = 3000 then (
       _add_creet playground;
