@@ -3,6 +3,7 @@ open Eliom_content
 open Html.D
 open Js_of_ocaml
 open Js_of_ocaml_lwt
+open Lwt_js_events
 
 (* -------------------- Types -------------------- *)
 
@@ -146,6 +147,20 @@ let _check_direction creet creets =
     creet.top_step <- top_step;
     creet.left_step <- left_step)
 
+let _event_handler creet event = Firebug.console##log event
+
+let _handle_events creet mouse_down _ =
+  _event_handler creet mouse_down;
+  Lwt.pick
+    [
+      mousemoves Dom_html.document (fun mouse_move _ ->
+          _event_handler creet mouse_move;
+          Lwt.return ());
+      (let%lwt mouse_up = mouseup Dom_html.document in
+       _event_handler creet mouse_up;
+       Lwt.return ());
+    ]
+
 (* -------------------- Main functions -------------------- *)
 
 let create global_speed =
@@ -179,6 +194,7 @@ let create global_speed =
   creet.dom_elt##.style##.backgroundColor := _get_bg_color creet.state;
   creet.dom_elt##.style##.height := _get_px creet.size;
   creet.dom_elt##.style##.width := _get_px creet.size;
+  Lwt.async (fun () -> mousedowns creet.dom_elt (_handle_events creet));
   creet
 
 let move creets creet =
