@@ -1,19 +1,7 @@
-[%%shared
-open Eliom_lib
+[%%server
 open Eliom_content
 open Html.D
-open Js_of_ocaml
-(**)]
 
-[%%client
-let main () =
-  Random.self_init ();
-  let playground = Playground.get () in
-  Lwt.async (fun () -> Playground.play playground);
-  Lwt.return ()
-(**)]
-
-[%%server
 module Game_app = Eliom_registration.App (struct
   let application_name = "game"
   let global_data_path = None
@@ -38,7 +26,7 @@ let page =
 
 let () =
   Game_app.register ~service:main_service (fun () () ->
-      let _ = [%client (main () : unit Lwt.t)] in
+      let _ = [%client (Playground.play () : unit)] in
       Lwt.return
         (Eliom_tools.D.html ~title:"h42n42" ~css:[ [ "css"; "game.css" ] ] page))
 (**)]

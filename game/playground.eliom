@@ -76,22 +76,15 @@ let rec _play playground =
 
 (* -------------------- Main functions -------------------- *)
 
-let get () =
+let play () =
+  Random.self_init ();
+  let creets_counter_span = span [ txt "0 creets" ] in
   let playground =
-    {
-      iter = 0;
-      global_speed = ref 0.;
-      creets = [];
-      creets_counter_span = span [ txt "0 creets" ];
-    }
+    { iter = 0; global_speed = ref 0.; creets = []; creets_counter_span }
   in
-  Html.Manip.appendChild ~%creets_counter_div playground.creets_counter_span;
-  playground
-
-let play playground =
+  Html.Manip.appendChild ~%creets_counter_div creets_counter_span;
   for _ = 1 to 3 do
     _add_creet playground
   done;
-  Lwt.async (fun () -> _play playground);
-  Lwt.return ()
+  Lwt.async (fun () -> _play playground)
 (**)]
