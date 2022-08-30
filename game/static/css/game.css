@@ -4,6 +4,9 @@
 
 body {
     margin: unset;
+    user-select: none;
+    /* Safari */
+    -webkit-user-select: none;
 }
 
 .gameboard {
