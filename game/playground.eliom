@@ -23,6 +23,8 @@ type playground = {
 
 (* -------------------- Utils -------------------- *)
 
+let deref r = !r
+
 let _update_dom_creets_counter playground =
   let creets_nb = List.length playground.creets in
   let plural = if creets_nb = 1 then ' ' else 's' in
@@ -48,24 +50,30 @@ let _move_creet playground creets creet =
       if not creet_is_alive then _remove_creet playground creet;
       Lwt.return ())
 
-let _increment_global_speed gs = gs := !gs +. 0.0001
+let _get_available_creets creets = List.filter (fun c -> c.available) creets
 
 let rec _play playground =
   let%lwt () = Lwt_js.sleep 0.001 in
   let healthy, sick =
     List.partition (fun c -> c.state = Healthy) playground.creets
   in
-  let creets = { healthy; sick } in
   if List.length healthy = 0 then (
     alert "GAME OVER";
     Lwt.return ())
   else (
-    _increment_global_speed playground.global_speed;
+    playground.global_speed := deref playground.global_speed +. 0.0001;
     playground.iter <- playground.iter + 1;
     if playground.iter = 3000 then (
       _add_creet playground;
       playground.iter <- 0);
-    List.iter (_move_creet playground creets) playground.creets;
+    let creets =
+      {
+        healthy = _get_available_creets healthy;
+        sick = _get_available_creets sick;
+      }
+    in
+    List.iter (_move_creet playground creets) creets.healthy;
+    List.iter (_move_creet playground creets) creets.sick;
     _play playground)
 
 (* -------------------- Main functions -------------------- *)

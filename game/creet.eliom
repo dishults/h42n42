@@ -13,6 +13,7 @@ type creet = {
   (* ----- General ----- *)
   elt : Html_types.div elt;
   dom_elt : Dom_html.divElement Js.t;
+  mutable available : bool;
   mutable state : creet_state;
   mutable size : float; (* diameter *)
   mutable speed : float; (* TODO global speed passed from playground *)
@@ -147,9 +148,17 @@ let _check_direction creet creets =
     creet.top_step <- top_step;
     creet.left_step <- left_step)
 
-let _event_handler creet event = Firebug.console##log event
+let _event_handler creet event =
+  let radius = creet.size /. 2. in
+  let left = float_of_int event##.clientX -. radius in
+  let top = float_of_int event##.clientY -. radius in
+  creet.left <- max creet.left_min (min creet.left_max left);
+  creet.top <- max creet.top_min (min creet.top_max top);
+  creet.dom_elt##.style##.top := _get_px creet.top;
+  creet.dom_elt##.style##.left := _get_px creet.left
 
 let _handle_events creet mouse_down _ =
+  creet.available <- false;
   _event_handler creet mouse_down;
   Lwt.pick
     [
@@ -158,6 +167,7 @@ let _handle_events creet mouse_down _ =
           Lwt.return ());
       (let%lwt mouse_up = mouseup Dom_html.document in
        _event_handler creet mouse_up;
+       creet.available <- true;
        Lwt.return ());
     ]
 
@@ -173,6 +183,7 @@ let create global_speed =
     {
       elt;
       dom_elt = Html.To_dom.of_div elt;
+      available = true;
       state = Healthy;
       size;
       speed = 1.;
