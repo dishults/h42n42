@@ -44,6 +44,13 @@ let _get_bg_color state =
     | Berserk -> "sienna"
     | Mean -> "tomato")
 
+let _get_creet_defaults () =
+  let speed = 1. in
+  let size = 50. in
+  let top_max = 700. -. size in
+  let left_max = 1000. -. size in
+  (speed, size, top_max, left_max)
+
 let _get_px number = Js.string (Printf.sprintf "%fpx" number)
 
 let _get_position position step speed global_speed =
@@ -69,8 +76,9 @@ let _decrease_size creet =
   creet.top_max <- creet.top_max +. 0.0025;
   creet.left_max <- creet.left_max +. 0.0025;
 
-  creet.dom_elt##.style##.height := _get_px creet.size;
-  creet.dom_elt##.style##.width := _get_px creet.size
+  let size_px = _get_px creet.size in
+  creet.dom_elt##.style##.height := size_px;
+  creet.dom_elt##.style##.width := size_px
 
 let rec _get_list_min ?(b_i = 1) ?(a_i = 0) a list list_length =
   if b_i < list_length then
@@ -109,6 +117,22 @@ let _go_after_healthy_creet creet creets =
   creet.top_step <- top_diff /. total;
   creet.left_step <- left_diff /. total
 
+let _heal creet =
+  (* Reset object *)
+  let speed, size, top_max, left_max = _get_creet_defaults () in
+  creet.state <- Healthy;
+  creet.speed <- speed;
+  creet.size <- size;
+  creet.top_max <- top_max;
+  creet.left_max <- left_max;
+  creet.sick_iter <- 0;
+
+  (* Reset DOM element *)
+  let size_px = _get_px creet.size in
+  creet.dom_elt##.style##.height := size_px;
+  creet.dom_elt##.style##.width := size_px;
+  creet.dom_elt##.style##.backgroundColor := _get_bg_color creet.state
+
 let _make_sick creet =
   let n = Random.int 100 in
   if n < 10 then creet.state <- Berserk
@@ -140,7 +164,7 @@ let _check_direction creet creets =
   (* Go after another creet or make a surprise direction change *)
   if creet.state = Mean then (
     creet.iter <- 0;
-    if creet.top -. 1. > creet.top_min then
+    if creet.top -. 1. > creet.top_min && List.length creets.healthy > 0 then
       _go_after_healthy_creet creet creets.healthy)
   else if creet.iter = creet.max_same_direction_iter then (
     creet.iter <- 0;
@@ -155,7 +179,9 @@ let _event_handler creet event =
   creet.left <- max creet.left_min (min creet.left_max left);
   creet.top <- max creet.top_min (min creet.top_max top);
   creet.dom_elt##.style##.top := _get_px creet.top;
-  creet.dom_elt##.style##.left := _get_px creet.left
+  creet.dom_elt##.style##.left := _get_px creet.left;
+  (* Heal creet if it was brought to the hospital *)
+  if creet.state != Healthy && creet.top >= creet.top_max then _heal creet
 
 let _handle_events creet mouse_down _ =
   creet.available <- false;
@@ -175,9 +201,7 @@ let _handle_events creet mouse_down _ =
 
 let create global_speed =
   let elt = div ~a:[ a_class [ "creet" ] ] [] in
-  let size = 50. in
-  let top_max = 700. -. size in
-  let left_max = 1000. -. size in
+  let speed, size, top_max, left_max = _get_creet_defaults () in
   let top_step, left_step = _get_random_steps () in
   let creet =
     {
@@ -186,7 +210,7 @@ let create global_speed =
       available = true;
       state = Healthy;
       size;
-      speed = 1.;
+      speed;
       global_speed;
       iter = 0;
       sick_iter = 0;
