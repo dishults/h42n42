@@ -11,7 +11,7 @@
         {
             "label": "kill-listener",
             "type": "shell",
-            "command": "lsof -i tcp:8080 | grep LISTEN | awk '{print $2}' | xargs kill -9",
+            "command": "lsof -i tcp:8080 | grep LISTEN | awk '{print $2}' | xargs kill -9 || true",
             "presentation": { "reveal": "never" }
         },
         {
