@@ -1,5 +1,6 @@
 # h42n42
 Project that aims to make you discover the basis of web programming on the client side in OCaml thanks to Ocsigen
+> Hopefully, this project will be opened to other programming languages in the future. Until then, here are all my notes that might be helpfull to get started with Eliom (OCaml).
 
 ## Mac
 
